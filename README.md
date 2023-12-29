@@ -9,9 +9,9 @@
 
 A port of Java's [CountDownLatch](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CountDownLatch.html).
 
-A `CountDownLatch` is initialized with a non-negative count. The promises returned by the `await()` method do not resolve until the current count reaches 0 due to calls to the `countDown()` method. This can occur only once, the count cannot be reset.
+A `CountDownLatch` is initialized with a non-negative count. The promises returned by the `wait()` method do not resolve until the current count reaches 0 due to calls to the `countDown()` method. This can occur only once, the count cannot be reset.
 
-The promises returned by the `await(timeout)` method resolve with `true` if the current count reaches 0 before the timeout expires, or `false` otherwise.
+The promises returned by the `wait(timeout)` method resolve with `true` if the current count reaches 0 before the timeout expires, or `false` otherwise.
 
 ### Sample usage
 
@@ -42,4 +42,31 @@ await readyLatch.await();
 startLatch.countDown();
 // wait for all promises to be done
 await finishLatch.await();
+```
+
+## Semaphore
+
+A port of Java's [Semaphore](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/Semaphore.html).
+
+A `Semaphore` is initialized with a non-negative number of permits. The promises returned by the `acquire()` and `acquire(permits)` methods do not resolve until enough permits are available, either because the current number is sufficient or because `release()` or `release(permits)` is called.
+
+The promises returned by the `tryAcquire()` and `tryAcquire(permits)` methods resolve with `true` if enough permits are available, or `false` otherwise.
+
+The promises returned by the `tryAcquire(options)` method resolve with `true` if enough permits become available before the timeout expires, or `false` otherwise.
+
+### Sample usage
+
+```typescript
+const semaphore = new Semaphore(0);
+// set if semaphore.availablePermits() > 0
+let value: string;
+
+function getValue(): Promise<string> {
+  return semaphore.acquire().then(() => value);
+}
+
+function setValue(v: string): void {
+  value = v;
+  semaphore.release();
+}
 ```
