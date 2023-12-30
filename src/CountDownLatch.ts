@@ -1,4 +1,5 @@
 export class CountDownLatch {
+  readonly #initialCount: number;
   #count: number;
   #waiting: ((value: void) => void)[];
 
@@ -6,6 +7,7 @@ export class CountDownLatch {
     if (count < 0) {
       throw new Error(`${count} < 0`);
     }
+    this.#initialCount = count;
     this.#count = count;
     this.#waiting = [];
   }
@@ -47,7 +49,11 @@ export class CountDownLatch {
     }
   }
 
-  getCount(): number {
+  initialCount(): number {
+    return this.#initialCount;
+  }
+
+  currentCount(): number {
     return this.#count;
   }
 
