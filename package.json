@@ -57,8 +57,5 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "collectCoverage": true
-  },
-  "dependencies": {
-    "completion-stage": "^1.0.0"
   }
 }

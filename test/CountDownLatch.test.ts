@@ -72,6 +72,21 @@ describe("timed wait", () => {
     expect(latch.toString()).toBe("CountDownLatch[count=0]");
   });
 
+  test.each([-1, 0])("non-positive timeout %d", async (timeout) => {
+    const latch = new CountDownLatch(1);
+    expect(latch.getCount()).toBe(1);
+    expect(latch.toString()).toBe("CountDownLatch[count=1]");
+
+    const startTime = new Date();
+    const result = await latch.wait(timeout);
+    const endTime = new Date();
+
+    expect(result).toBe(false);
+    expect(endTime.getTime() - startTime.getTime()).toBeLessThan(10);
+    expect(latch.getCount()).toBe(1);
+    expect(latch.toString()).toBe("CountDownLatch[count=1]");
+  });
+
   test("timeout expires", async () => {
     const latch = new CountDownLatch(1);
     expect(latch.getCount()).toBe(1);

@@ -1,17 +1,7 @@
-import { resolveOnTimeout } from "completion-stage";
-
-interface ImmediateCaller {
+interface Caller {
   permitsNeeded: number;
   callback(value: void): void;
 }
-
-interface CallerWithTImeout {
-  permitsNeeded: number;
-  callback(value: boolean): void;
-  expiresAt: number;
-}
-
-type Caller = ImmediateCaller | CallerWithTImeout;
 
 export interface TryAcquireOptions {
   permits?: number;
@@ -63,17 +53,24 @@ export class Semaphore {
       this.#permits -= permits;
       return Promise.resolve(true);
     }
-    if (timeout === undefined) {
+    if (timeout === undefined || timeout <= 0) {
       return Promise.resolve(false);
     }
-    const promise = new Promise<boolean>((resolve) => {
-      this.#waiting.push({
+    return new Promise<boolean>((resolve) => {
+      let caller: Caller | undefined = undefined;
+      const timer = setTimeout(() => {
+        this.#waiting = this.#waiting.filter((c) => c !== caller);
+        resolve(false);
+      }, timeout);
+      caller = {
         permitsNeeded: permits,
-        callback: resolve,
-        expiresAt: new Date().getTime() + timeout!,
-      });
+        callback: () => {
+          clearTimeout(timer);
+          resolve(true);
+        },
+      };
+      this.#waiting.push(caller);
     });
-    return resolveOnTimeout(promise, false, timeout);
   }
 
   release(permits = 1): void {
@@ -84,27 +81,12 @@ export class Semaphore {
 
     const waiting = this.#waiting;
     this.#waiting = [];
-    const now = new Date().getTime();
     for (const caller of waiting) {
-      if ("expiresAt" in caller) {
-        if (now > caller.expiresAt) {
-          // tryAcquire expired
-          // the result will most likely be ignored due to the call to resolveOnTimeout,
-          // but it's still good to resolve the promise to cleanup resources
-          caller.callback(false);
-        } else if (this.#permits >= caller.permitsNeeded) {
-          this.#permits -= caller.permitsNeeded;
-          caller.callback(true);
-        } else {
-          this.#waiting.push(caller);
-        }
+      if (this.#permits >= caller.permitsNeeded) {
+        this.#permits -= caller.permitsNeeded;
+        caller.callback();
       } else {
-        if (this.#permits >= caller.permitsNeeded) {
-          this.#permits -= caller.permitsNeeded;
-          caller.callback();
-        } else {
-          this.#waiting.push(caller);
-        }
+        this.#waiting.push(caller);
       }
     }
   }

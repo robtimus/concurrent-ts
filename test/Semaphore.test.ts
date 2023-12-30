@@ -26,6 +26,8 @@ describe("acquire", () => {
 
     expect(semaphore.availablePermits()).toBe(0);
     expect(semaphore.toString()).toBe("Semaphore[permits=0]");
+    expect(semaphore.hasWaitingCallers()).toBe(false);
+    expect(semaphore.waitingCallerCount()).toBe(0);
   });
 
   test("no available permits", async () => {
@@ -44,6 +46,8 @@ describe("acquire", () => {
     expect(endTime.getTime() - startTime.getTime()).toBeLessThan(100);
     expect(semaphore.availablePermits()).toBe(0);
     expect(semaphore.toString()).toBe("Semaphore[permits=0]");
+    expect(semaphore.hasWaitingCallers()).toBe(false);
+    expect(semaphore.waitingCallerCount()).toBe(0);
   });
 
   test("available permits", async () => {
@@ -58,6 +62,8 @@ describe("acquire", () => {
     expect(endTime.getTime() - startTime.getTime()).toBeLessThan(10);
     expect(semaphore.availablePermits()).toBe(1);
     expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+    expect(semaphore.hasWaitingCallers()).toBe(false);
+    expect(semaphore.waitingCallerCount()).toBe(0);
   });
 });
 
@@ -77,6 +83,8 @@ describe("tryAcquire", () => {
     expect(endTime.getTime() - startTime.getTime()).toBeLessThan(10);
     expect(semaphore.availablePermits()).toBe(0);
     expect(semaphore.toString()).toBe("Semaphore[permits=0]");
+    expect(semaphore.hasWaitingCallers()).toBe(false);
+    expect(semaphore.waitingCallerCount()).toBe(0);
   });
 
   test("not available without timeout", async () => {
@@ -92,6 +100,28 @@ describe("tryAcquire", () => {
     expect(endTime.getTime() - startTime.getTime()).toBeLessThan(10);
     expect(semaphore.availablePermits()).toBe(1);
     expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+    expect(semaphore.hasWaitingCallers()).toBe(false);
+    expect(semaphore.waitingCallerCount()).toBe(0);
+  });
+
+  test.each([-1, 0])("not available with non-positive timeout %d", async (timeout) => {
+    const semaphore = new Semaphore(1);
+    expect(semaphore.availablePermits()).toBe(1);
+    expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+
+    const startTime = new Date();
+    const result = await semaphore.tryAcquire({
+      permits: 2,
+      timeout,
+    });
+    const endTime = new Date();
+
+    expect(result).toBe(false);
+    expect(endTime.getTime() - startTime.getTime()).toBeLessThan(10);
+    expect(semaphore.availablePermits()).toBe(1);
+    expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+    expect(semaphore.hasWaitingCallers()).toBe(false);
+    expect(semaphore.waitingCallerCount()).toBe(0);
   });
 
   test("not available within timeout", async () => {
@@ -118,6 +148,8 @@ describe("tryAcquire", () => {
     expect(endTime.getTime() - startTime.getTime()).toBeGreaterThanOrEqual(10);
     expect(semaphore.availablePermits()).toBe(1);
     expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+    expect(semaphore.hasWaitingCallers()).toBe(false);
+    expect(semaphore.waitingCallerCount()).toBe(0);
 
     releaseLatch.countDown();
     await releasedLatch.wait();
@@ -146,6 +178,8 @@ describe("tryAcquire", () => {
     expect(endTime.getTime() - startTime.getTime()).toBeLessThan(100);
     expect(semaphore.availablePermits()).toBe(6);
     expect(semaphore.toString()).toBe("Semaphore[permits=6]");
+    expect(semaphore.hasWaitingCallers()).toBe(false);
+    expect(semaphore.waitingCallerCount()).toBe(0);
   });
 });
 

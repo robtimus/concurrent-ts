@@ -1,5 +1,3 @@
-import { resolveOnTimeout } from "completion-stage";
-
 export class CountDownLatch {
   #count: number;
   #waiting: ((value: void) => void)[];
@@ -18,15 +16,24 @@ export class CountDownLatch {
     if (this.#count === 0) {
       return timeout === undefined ? Promise.resolve() : Promise.resolve(true);
     }
-    const promise = new Promise<void>((resolve) => this.#waiting.push(resolve));
     if (timeout === undefined) {
-      return promise;
+      return new Promise<void>((resolve) => this.#waiting.push(resolve));
     }
-    return resolveOnTimeout(
-      promise.then(() => true),
-      false,
-      timeout,
-    );
+    if (timeout <= 0) {
+      return Promise.resolve(false);
+    }
+    return new Promise<boolean>((resolve) => {
+      let callback: ((value: void) => void) | undefined = undefined;
+      const timer = setTimeout(() => {
+        this.#waiting = this.#waiting.filter((cb) => cb !== callback);
+        resolve(false);
+      }, timeout);
+      callback = () => {
+        clearTimeout(timer);
+        resolve(true);
+      };
+      this.#waiting.push(callback);
+    });
   }
 
   countDown(): void {
