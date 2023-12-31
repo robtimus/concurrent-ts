@@ -3,7 +3,7 @@ interface Acquirer {
   callback(value: void): void;
 }
 
-export interface TryAcquireOptions {
+export interface TryAcquireSemaphoreOptions {
   /** The number of permits to acquire; defaults to 1. */
   permits?: number;
   /** The maximum time to wait, in milliseconds. */
@@ -73,8 +73,8 @@ export class Semaphore {
    *         The promise will never be rejected.
    * @throws If the given options specifies a negative number of permits.
    */
-  tryAcquire(options: TryAcquireOptions): Promise<boolean>;
-  tryAcquire(permitsOrOptions?: number | TryAcquireOptions): boolean | Promise<boolean> {
+  tryAcquire(options: TryAcquireSemaphoreOptions): Promise<boolean>;
+  tryAcquire(permitsOrOptions?: number | TryAcquireSemaphoreOptions): boolean | Promise<boolean> {
     if (typeof permitsOrOptions !== "object") {
       // tryAcquire() or tryAcquire(permits)
 
