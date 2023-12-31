@@ -1,4 +1,4 @@
-interface Caller {
+interface Acquirer {
   permitsNeeded: number;
   callback(value: void): void;
 }
@@ -10,7 +10,7 @@ export interface TryAcquireOptions {
 
 export class Semaphore {
   #permits: number;
-  #waiting: Caller[];
+  #waiting: Acquirer[];
 
   constructor(permits: number) {
     if (permits < 0) {
@@ -57,19 +57,19 @@ export class Semaphore {
       return Promise.resolve(false);
     }
     return new Promise<boolean>((resolve) => {
-      let caller: Caller | undefined = undefined;
+      let acquirer: Acquirer | undefined = undefined;
       const timer = setTimeout(() => {
-        this.#waiting = this.#waiting.filter((c) => c !== caller);
+        this.#waiting = this.#waiting.filter((c) => c !== acquirer);
         resolve(false);
       }, timeout);
-      caller = {
+      acquirer = {
         permitsNeeded: permits,
         callback: () => {
           clearTimeout(timer);
           resolve(true);
         },
       };
-      this.#waiting.push(caller);
+      this.#waiting.push(acquirer);
     });
   }
 
@@ -81,12 +81,12 @@ export class Semaphore {
 
     const waiting = this.#waiting;
     this.#waiting = [];
-    for (const caller of waiting) {
-      if (this.#permits >= caller.permitsNeeded) {
-        this.#permits -= caller.permitsNeeded;
-        caller.callback();
+    for (const acquirer of waiting) {
+      if (this.#permits >= acquirer.permitsNeeded) {
+        this.#permits -= acquirer.permitsNeeded;
+        acquirer.callback();
       } else {
-        this.#waiting.push(caller);
+        this.#waiting.push(acquirer);
       }
     }
   }
@@ -101,11 +101,11 @@ export class Semaphore {
     return permits;
   }
 
-  hasWaitingCallers(): boolean {
+  hasWaitingAcquirers(): boolean {
     return this.#waiting.length > 0;
   }
 
-  waitingCallerCount(): number {
+  waitingAcquirerCount(): number {
     return this.#waiting.length;
   }
 
