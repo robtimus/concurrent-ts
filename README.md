@@ -5,7 +5,7 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=robtimus%3Aconcurrent&metric=coverage)](https://sonarcloud.io/summary/overall?id=robtimus%3Aconcurrent)
 [![Known Vulnerabilities](https://snyk.io/test/github/robtimus/concurrent-ts/badge.svg)](https://snyk.io/test/github/robtimus/concurrent-ts)
 
-## CountDownLatch
+## [CountDownLatch](https://robtimus.github.io/concurrent/docs/classes/CountDownLatch.CountDownLatch.html)
 
 A port of Java's [CountDownLatch](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CountDownLatch.html).
 
@@ -44,7 +44,7 @@ startLatch.countDown();
 await finishLatch.await();
 ```
 
-## Semaphore
+## [Semaphore](https://robtimus.github.io/concurrent/docs/classes/Semaphore.Semaphore.html)
 
 A port of Java's [Semaphore](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/Semaphore.html).
 

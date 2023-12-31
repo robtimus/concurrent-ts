@@ -1,0 +1,10 @@
+{
+  "name": "@robtimus/concurrent",
+  "readme": "README.md",
+  "entryPointStrategy": "expand",
+  "entryPoints": ["src"],
+  "exclude": ["**/node_modules/**"],
+  "excludePrivate": true,
+  "disableSources": true,
+  "hideGenerator": true
+}

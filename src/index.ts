@@ -1,2 +1,2 @@
 export { CountDownLatch } from "./CountDownLatch";
-export { Semaphore } from "./Semaphore";
+export { Semaphore, TryAcquireOptions } from "./Semaphore";
