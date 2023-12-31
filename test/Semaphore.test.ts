@@ -68,40 +68,82 @@ describe("acquire", () => {
 });
 
 describe("tryAcquire", () => {
-  test("available immediately", async () => {
-    const semaphore = new Semaphore(1);
-    expect(semaphore.availablePermits()).toBe(1);
-    expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+  describe("without timeout", () => {
+    test("negative permits", () => {
+      const semaphore = new Semaphore(1);
 
-    const startTime = new Date();
-    const result = await semaphore.tryAcquire({
-      timeout: 100,
+      expect(() => semaphore.tryAcquire(-1)).toThrow("-1 < 0");
+      expect(semaphore.availablePermits()).toBe(1);
+      expect(semaphore.toString()).toBe("Semaphore[permits=1]");
     });
-    const endTime = new Date();
 
-    expect(result).toBe(true);
-    expect(endTime.getTime() - startTime.getTime()).toBeLessThan(10);
-    expect(semaphore.availablePermits()).toBe(0);
-    expect(semaphore.toString()).toBe("Semaphore[permits=0]");
-    expect(semaphore.hasWaitingAcquirers()).toBe(false);
-    expect(semaphore.waitingAcquirerCount()).toBe(0);
+    test("available immediately", async () => {
+      const semaphore = new Semaphore(1);
+      expect(semaphore.availablePermits()).toBe(1);
+      expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+
+      const startTime = new Date();
+      const result = semaphore.tryAcquire();
+      const endTime = new Date();
+
+      expect(result).toBe(true);
+      expect(endTime.getTime() - startTime.getTime()).toBeLessThan(10);
+      expect(semaphore.availablePermits()).toBe(0);
+      expect(semaphore.toString()).toBe("Semaphore[permits=0]");
+      expect(semaphore.hasWaitingAcquirers()).toBe(false);
+      expect(semaphore.waitingAcquirerCount()).toBe(0);
+    });
+
+    test("not available", async () => {
+      const semaphore = new Semaphore(1);
+      expect(semaphore.availablePermits()).toBe(1);
+      expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+
+      const startTime = new Date();
+      const result = semaphore.tryAcquire(2);
+      const endTime = new Date();
+
+      expect(result).toBe(false);
+      expect(endTime.getTime() - startTime.getTime()).toBeLessThan(10);
+      expect(semaphore.availablePermits()).toBe(1);
+      expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+      expect(semaphore.hasWaitingAcquirers()).toBe(false);
+      expect(semaphore.waitingAcquirerCount()).toBe(0);
+    });
   });
 
-  test("not available without timeout", async () => {
-    const semaphore = new Semaphore(1);
-    expect(semaphore.availablePermits()).toBe(1);
-    expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+  describe("with timeout", () => {
+    test("negative permits", () => {
+      const semaphore = new Semaphore(1);
 
-    const startTime = new Date();
-    const result = await semaphore.tryAcquire(2);
-    const endTime = new Date();
+      expect(() =>
+        semaphore.tryAcquire({
+          permits: -1,
+          timeout: 0,
+        }),
+      ).toThrow("-1 < 0");
+      expect(semaphore.availablePermits()).toBe(1);
+      expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+    });
 
-    expect(result).toBe(false);
-    expect(endTime.getTime() - startTime.getTime()).toBeLessThan(10);
-    expect(semaphore.availablePermits()).toBe(1);
-    expect(semaphore.toString()).toBe("Semaphore[permits=1]");
-    expect(semaphore.hasWaitingAcquirers()).toBe(false);
-    expect(semaphore.waitingAcquirerCount()).toBe(0);
+    test("available immediately", async () => {
+      const semaphore = new Semaphore(1);
+      expect(semaphore.availablePermits()).toBe(1);
+      expect(semaphore.toString()).toBe("Semaphore[permits=1]");
+
+      const startTime = new Date();
+      const result = await semaphore.tryAcquire({
+        timeout: 100,
+      });
+      const endTime = new Date();
+
+      expect(result).toBe(true);
+      expect(endTime.getTime() - startTime.getTime()).toBeLessThan(10);
+      expect(semaphore.availablePermits()).toBe(0);
+      expect(semaphore.toString()).toBe("Semaphore[permits=0]");
+      expect(semaphore.hasWaitingAcquirers()).toBe(false);
+      expect(semaphore.waitingAcquirerCount()).toBe(0);
+    });
   });
 
   test.each([-1, 0])("not available with non-positive timeout %d", async (timeout) => {

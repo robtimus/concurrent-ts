@@ -36,24 +36,36 @@ export class Semaphore {
     });
   }
 
-  tryAcquire(): Promise<boolean>;
-  tryAcquire(permits: number): Promise<boolean>;
+  tryAcquire(): boolean;
+  tryAcquire(permits: number): boolean;
   tryAcquire(options: TryAcquireOptions): Promise<boolean>;
-  tryAcquire(permitsOrOptions?: number | TryAcquireOptions): Promise<boolean> {
-    let permits = 1;
-    let timeout: number | undefined;
-    if (typeof permitsOrOptions === "number") {
-      permits = permitsOrOptions;
-    } else if (permitsOrOptions) {
-      permits = permitsOrOptions.permits ?? 1;
-      timeout = permitsOrOptions.timeout;
+  tryAcquire(permitsOrOptions?: number | TryAcquireOptions): boolean | Promise<boolean> {
+    if (typeof permitsOrOptions !== "object") {
+      // tryAcquire() or tryAcquire(permits)
+
+      const permits = permitsOrOptions ?? 1;
+      if (permits < 0) {
+        throw new Error(`${permits} < 0`);
+      }
+      if (this.#permits >= permits) {
+        this.#permits -= permits;
+        return true;
+      }
+      return false;
     }
 
+    // tryAcquire(options)
+
+    const permits = permitsOrOptions.permits ?? 1;
+    const timeout = permitsOrOptions.timeout;
+    if (permits < 0) {
+      throw new Error(`${permits} < 0`);
+    }
     if (this.#permits >= permits) {
       this.#permits -= permits;
       return Promise.resolve(true);
     }
-    if (timeout === undefined || timeout <= 0) {
+    if (timeout <= 0) {
       return Promise.resolve(false);
     }
     return new Promise<boolean>((resolve) => {
