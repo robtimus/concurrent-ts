@@ -152,7 +152,6 @@ export class Semaphore {
 
   /**
    * Drains the number of permits. Afterwards, `availablePermits()` will return 0.
-   *
    * @returns The number of available permits before this method was called.
    */
   drainPermits(): number {
