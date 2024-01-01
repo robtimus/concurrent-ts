@@ -1,5 +1,5 @@
 import { CountDownLatch } from "../src";
-import { expectDurationAtMost, expectDurationBetween } from "./testUtil";
+import { expectDurationBetween, expectResolvedImmediately } from "./testUtil";
 
 function expectCountDownLatch(latch: CountDownLatch, currentCount: number): void {
   expect(latch.currentCount()).toBe(currentCount);
@@ -40,7 +40,7 @@ describe("untimed wait", () => {
     latch.countDown();
     expectCountDownLatch(latch, 0);
 
-    await expectDurationAtMost(10, () => latch.wait());
+    await expectResolvedImmediately(() => latch.wait());
 
     expect(latch.initialCount()).toBe(2);
     expectCountDownLatch(latch, 0);
@@ -69,7 +69,7 @@ describe("timed wait", () => {
     expect(latch.currentCount()).toBe(1);
     expect(latch.toString()).toBe("CountDownLatch[count=1]");
 
-    const result = await expectDurationAtMost(10, () => latch.wait(timeout));
+    const result = await expectResolvedImmediately(() => latch.wait(timeout));
 
     expect(result).toBe(false);
     expect(latch.initialCount()).toBe(1);
@@ -99,7 +99,7 @@ describe("timed wait", () => {
     latch.countDown();
     expectCountDownLatch(latch, 0);
 
-    const result = await expectDurationAtMost(10, () => latch.wait(50));
+    const result = await expectResolvedImmediately(() => latch.wait(50));
 
     expect(result).toBe(true);
     expect(latch.initialCount()).toBe(2);

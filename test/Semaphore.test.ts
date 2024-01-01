@@ -1,5 +1,5 @@
 import { CountDownLatch, Semaphore } from "../src";
-import { expectDurationAtLeast, expectDurationAtMost, expectDurationBetween } from "./testUtil";
+import { expectDurationAtLeast, expectDurationBetween, expectResolvedImmediately } from "./testUtil";
 
 function expectSemaphore(semaphore: Semaphore, availablePermits: number, hasWaitingAcquirers = false, waitingAcquirerCount = 0): void {
   expect(semaphore.availablePermits()).toBe(availablePermits);
@@ -50,7 +50,7 @@ describe("acquire", () => {
     const semaphore = new Semaphore(3);
     expectSemaphore(semaphore, 3);
 
-    await expectDurationAtMost(10, () => semaphore.acquire(2));
+    await expectResolvedImmediately(() => semaphore.acquire(2));
 
     expectSemaphore(semaphore, 1);
   });
@@ -105,7 +105,7 @@ describe("tryAcquire", () => {
       const semaphore = new Semaphore(1);
       expectSemaphore(semaphore, 1);
 
-      const result = await expectDurationAtMost(10, () =>
+      const result = await expectResolvedImmediately(() =>
         semaphore.tryAcquire({
           timeout: 100,
         }),
@@ -120,7 +120,7 @@ describe("tryAcquire", () => {
     const semaphore = new Semaphore(1);
     expectSemaphore(semaphore, 1);
 
-    const result = await expectDurationAtMost(10, () =>
+    const result = await expectResolvedImmediately(() =>
       semaphore.tryAcquire({
         permits: 2,
         timeout,
