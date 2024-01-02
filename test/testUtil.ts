@@ -1,40 +1,32 @@
-export async function expectDurationAtLeast<T>(minTime: number, func: () => Promise<T>): Promise<T> {
+async function expectDuration<T>(func: () => Promise<T>, expectation: (duration: number) => void): Promise<T> {
   const promise = func();
 
   const startTime = new Date();
   const result = await promise;
   const endTime = new Date();
 
-  expect(endTime.getTime() - startTime.getTime()).toBeGreaterThanOrEqual(minTime);
+  expectation(endTime.getTime() - startTime.getTime());
 
   return result;
 }
 
-export async function expectDurationAtMost<T>(maxTime: number, func: () => Promise<T>): Promise<T> {
-  const promise = func();
+export async function expectDurationAtLeast<T>(minDuration: number, func: () => Promise<T>): Promise<T> {
+  // cannot guarantee that a setTimeout doesn't resolve just slightly early, so subtract 1ms
+  return expectDuration(func, (duration) => expect(duration).toBeGreaterThanOrEqual(minDuration - 1));
+}
 
-  const startTime = new Date();
-  const result = await promise;
-  const endTime = new Date();
-
-  expect(endTime.getTime() - startTime.getTime()).toBeLessThanOrEqual(maxTime);
-
-  return result;
+export async function expectDurationAtMost<T>(maxDuration: number, func: () => Promise<T>): Promise<T> {
+  return expectDuration(func, (duration) => expect(duration).toBeLessThanOrEqual(maxDuration));
 }
 
 export async function expectResolvedImmediately<T>(func: () => Promise<T>): Promise<T> {
-  return expectDurationAtMost(0, func);
+  // cannot guarantee that this occurs immediately, so use a very small max duration
+  return expectDurationAtMost(2, func);
 }
 
-export async function expectDurationBetween<T>(minTime: number, maxTime: number, func: () => Promise<T>): Promise<T> {
-  const promise = func();
-
-  const startTime = new Date();
-  const result = await promise;
-  const endTime = new Date();
-
-  expect(endTime.getTime() - startTime.getTime()).toBeGreaterThanOrEqual(minTime);
-  expect(endTime.getTime() - startTime.getTime()).toBeLessThanOrEqual(maxTime);
-
-  return result;
+export async function expectDurationBetween<T>(minDuration: number, maxDuration: number, func: () => Promise<T>): Promise<T> {
+  return expectDuration(func, (duration) => {
+    expect(duration).toBeGreaterThanOrEqual(minDuration);
+    expect(duration).toBeLessThanOrEqual(maxDuration);
+  });
 }

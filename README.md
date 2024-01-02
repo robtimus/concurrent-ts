@@ -70,3 +70,55 @@ function setValue(v: string): void {
   semaphore.release();
 }
 ```
+
+## [ReadWriteLock](https://robtimus.github.io/concurrent/docs/classes/ReadWriteLock.ReadWriteLock.html)
+
+A locking mechanism that allows multiple concurrent readers, but only one writer at a time.
+It's inspired by both Java's [ReadWriteLock](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/ReadWriteLock.html) and .NET's [ReaderWriterLockSlim](https://learn.microsoft.com/en-us/dotnet/api/system.threading.readerwriterlockslim).
+Unlike both of these, acquiring a lock returns an object that implements [ReadLock](https://robtimus.github.io/concurrent/docs/interfaces/ReadWriteLock.ReadLock.html) or [WriteLock](https://robtimus.github.io/concurrent/docs/interfaces/ReadWriteLock.WriteLock.html). This allows a specific lock to be released, something that's enforced in Java and .NET by releasing locks on the same thread on which they were acquired.
+
+### Fairness
+
+By default a `ReadWriteLock` is fair. That means that if there are active read locks and pending write locks, new read locks will not be acquired immediately. This prevents readers from blocking writers indefinitely.
+
+To let new read locks be acquired immediately if at least one read lock is active, set the fairness to `false`:
+
+```typescript
+const lock = new ReadWriteLock({
+  fair: false,
+});
+```
+
+### Sample usage
+
+```typescript
+class CachedData<T> {
+  private data?: T;
+  private cacheValid = false;
+  private lock = new ReadWriteLock();
+
+  async processCachedData() {
+    let readLock = await this.lock.acquireReadLock();
+    if (!this.cacheValid) {
+      // Unlike in Java, locks can be upgraded directly
+      // Unlike in .NET, any read lock can be upgraded
+      const writeLock = await readLock.upgradeToWriteLock();
+      try {
+        // Recheck state because another invocation might have acquired the write lock
+        // and changed data before the upgrade has completed.
+        if (!this.cacheValid) {
+          this.data = ...;
+          this.cacheValid = true;
+        }
+      } finally {
+        readLock = writeLock.downgradeToReadLock();
+      }
+    }
+    try {
+      use(this.data);
+    } finally {
+      readLock.release();
+    }
+  }
+}
+```
