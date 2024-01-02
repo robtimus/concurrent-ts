@@ -7,11 +7,20 @@
 
 ## [CountDownLatch](https://robtimus.github.io/concurrent/docs/classes/CountDownLatch.CountDownLatch.html)
 
-A port of Java's [CountDownLatch](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CountDownLatch.html).
+A locking mechanism that allows one or more tasks to wait until a set of operations being performed in other tasks completes.
+It's inspired by Java's [CountDownLatch](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CountDownLatch.html).
 
 A `CountDownLatch` is initialized with a non-negative count. The promises returned by the `wait()` method do not resolve until the current count reaches 0 due to calls to the `countDown()` method. This can occur only once, the count cannot be reset.
 
-The promises returned by the `wait(timeout)` method resolve with `true` if the current count reaches 0 before the timeout expires, or `false` otherwise.
+The promises returned by the `wait(timeout)` are rejected if the timeout expires before the current count reaches 0. To get a `false` like Java's `CountDownLatch`, simply use  `catch`:
+
+```typescript
+if (await latch.wait(timeout).catch(() => false) !== false) {
+  // count reached 0
+} else {
+  // timeout expired
+}
+```
 
 ### Sample usage
 

@@ -17,39 +17,30 @@ export class CountDownLatch {
 
   /**
    * Waits until the count reaches zero.
+   * @param timeout The optional maximum time to wait, in milliseconds.
    * @return A promise that isn't resolved until the count reaches zero.
-   */
-  wait(): Promise<void>;
-  /**
-   * Waits until the count reaches zero.
-   * @param timeout The maximum time to wait, in milliseconds.
-   * @return A promise that isn't resolved until the count reaches zero or the given timeout expires, whichever occurs first.
-   *         If the count reaches zero before the timeout expires, the promise will be resolved with `true`.
-   *         If the timeout expires, the promise will be resolved with `false`.
-   *         If the timeout is not positive, the promise will be resolved immediately.
    *         <p>
-   *         The promise will never be rejected.
+   *         If a timeout is given and it expires, the promise will be rejected.
    */
-  wait(timeout: number): Promise<boolean>;
-  wait(timeout?: number): Promise<void | boolean> {
+  wait(timeout?: number): Promise<void> {
     if (this.#count === 0) {
-      return timeout === undefined ? Promise.resolve() : Promise.resolve(true);
+      return Promise.resolve();
     }
     if (timeout === undefined) {
       return new Promise<void>((resolve) => this.#waiting.push(resolve));
     }
     if (timeout <= 0) {
-      return Promise.resolve(false);
+      return Promise.reject("Timeout expired");
     }
-    return new Promise<boolean>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
       let callback: ((value: void) => void) | undefined = undefined;
       const timer = setTimeout(() => {
         this.#waiting = this.#waiting.filter((cb) => cb !== callback);
-        resolve(false);
+        reject("Timeout expired");
       }, timeout);
       callback = () => {
         clearTimeout(timer);
-        resolve(true);
+        resolve();
       };
       this.#waiting.push(callback);
     });
