@@ -39,7 +39,7 @@
     "typescript": "^5.3.3"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
