@@ -12,37 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Build
+name: Release site
 
 on:
-  workflow_dispatch:
   push:
-    # only run for branches, not tags
-    branches: ['**']
-  pull_request:
+    tags: ['v[0-9]+.[0-9]+*']
+
+permissions:
+  contents: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: ['16.x', '18.x', '20.x']
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js ${{matrix.node}}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{matrix.node}}
-          cache: 'npm'
-      - name: Install packages
-        run: npm ci
-      - name: Build project
-        run: npm run build
-      - name: Run tests
-        run: npm run test
-
-  site:
+  release-site:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,3 +35,8 @@ jobs:
         run: npm ci
       - name: Run TypeDoc
         run: npm run typedoc
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: 'docs'
+          commit-message: 'Updated for version ${{ github.ref_name }}'
