@@ -131,3 +131,33 @@ class CachedData<T> {
   }
 }
 ```
+
+## [ConcurrentMap](https://robtimus.github.io/concurrent/docs/classes/ConcurrentMap.ConcurrentMap.html)
+
+An object similar to [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) that allows concurrent modification.
+It's inspired by Java's [ConcurrentHashMap](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html).
+
+### Sample usage
+
+```typescript
+class CachedData<K, V> {
+  private map = new ConcurrentMap<K, V>();
+
+  async processCachedData(key: K) {
+    return this.map.compute(key, (k, v) => {
+      if (this.isValid(v)) {
+        return v;
+      }
+      return this.calculate(k);
+    });
+  }
+
+  private isValid(value?: V) {
+    return value !== undefined && ...;
+  }
+
+  private async calculate(key: K) {
+    return ...
+  }
+}
+```
