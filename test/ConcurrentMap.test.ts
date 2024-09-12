@@ -1482,10 +1482,10 @@ test("example", async () => {
     private map = new ConcurrentMap<number, string>();
     public calculateCount = 0;
 
-    async processCachedData(key: number): Promise<string | undefined> {
+    async processCachedData(key: number): Promise<string> {
       return this.map.compute(key, (k, v) => {
         if (this.isValid(v)) {
-          return v;
+          return v!;
         }
         return this.calculate(k);
       });

@@ -1,7 +1,5 @@
 type Callback = () => void;
 
-export type FunctionResult<V> = V | undefined | PromiseLike<V | undefined>;
-
 /**
  * @template K The key type.
  * @template V The value type.
@@ -236,6 +234,18 @@ export class ConcurrentMap<K, V> {
 
   /**
    * Computes the value for a key only if there is no entry for the key yet.
+   * The new value will be the return value of calling the given function.
+   * If the given function throws an error, the error is propagated through the returned promise and no value is set.
+   * @param key The key to compute the value for.
+   * @param fn The function to compute the value. Its input will be the key.
+   * @return A promise that will be resolved with the new value for the key.
+   *         <p>
+   *         If there are any pending actions for the key the returned promise will not be resolved until they have all finished.
+   *         The promise will be rejected if the given function throws an error.
+   */
+  computeIfAbsent(key: K, fn: (k: K) => V | PromiseLike<V>): Promise<V>;
+  /**
+   * Computes the value for a key only if there is no entry for the key yet.
    * The new value will be the return value of calling the given function. However, if the given function returns `undefined`, no value is set.
    * If the given function throws an error, the error is propagated through the returned promise and no value is set.
    * @param key The key to compute the value for.
@@ -245,7 +255,8 @@ export class ConcurrentMap<K, V> {
    *         If there are any pending actions for the key the returned promise will not be resolved until they have all finished.
    *         The promise will be rejected if the given function throws an error.
    */
-  computeIfAbsent(key: K, fn: (k: K) => FunctionResult<V>): Promise<V | undefined> {
+  computeIfAbsent(key: K, fn: (k: K) => V | undefined | PromiseLike<V | undefined>): Promise<V | undefined>;
+  computeIfAbsent(key: K, fn: (k: K) => V | undefined | PromiseLike<V | undefined>): Promise<V | undefined> {
     const pending = this.#pending.get(key);
     if (pending === undefined) {
       const oldValue = this.#current.get(key);
@@ -270,7 +281,7 @@ export class ConcurrentMap<K, V> {
     });
   }
 
-  #computeWhenAbsent(key: K, fn: (k: K) => FunctionResult<V>, resolve: (v?: V) => void, reject: (reason: unknown) => void): void {
+  #computeWhenAbsent(key: K, fn: (k: K) => V | undefined | PromiseLike<V | undefined>, resolve: (v?: V) => void, reject: (reason: unknown) => void): void {
     Promise.resolve(key)
       .then(fn)
       .then((v) => {
@@ -285,6 +296,18 @@ export class ConcurrentMap<K, V> {
 
   /**
    * Computes the value for a key only if there is entry for the key already.
+   * The new value will be the return value of calling the given function.
+   * If the given function throws an error, the error is propagated through the returned promise and no value is set or removed.
+   * @param key The key to compute the value for.
+   * @param fn The function to compute the value. Its input will be the key and previous value.
+   * @return A promise that will be resolved with the new value for the key.
+   *         <p>
+   *         If there are any pending actions for the key the returned promise will not be resolved until they have all finished.
+   *         The promise will be rejected if the given function throws an error.
+   */
+  computeIfPresent(key: K, fn: (k: K, v: V) => V | PromiseLike<V>): Promise<V>;
+  /**
+   * Computes the value for a key only if there is entry for the key already.
    * The new value will be the return value of calling the given function. However, if the given function returns `undefined`, the entry is removed instead.
    * If the given function throws an error, the error is propagated through the returned promise and no value is set or removed.
    * @param key The key to compute the value for.
@@ -294,7 +317,8 @@ export class ConcurrentMap<K, V> {
    *         If there are any pending actions for the key the returned promise will not be resolved until they have all finished.
    *         The promise will be rejected if the given function throws an error.
    */
-  computeIfPresent(key: K, fn: (k: K, v: V) => FunctionResult<V>): Promise<V | undefined> {
+  computeIfPresent(key: K, fn: (k: K, v: V) => V | undefined | PromiseLike<V | undefined>): Promise<V | undefined>;
+  computeIfPresent(key: K, fn: (k: K, v: V) => V | undefined | PromiseLike<V | undefined>): Promise<V | undefined> {
     const pending = this.#pending.get(key);
     if (pending === undefined) {
       const current = this.#current.get(key);
@@ -319,7 +343,7 @@ export class ConcurrentMap<K, V> {
     });
   }
 
-  #computeWhenPresent(key: K, oldValue: V, fn: (k: K, v: V) => FunctionResult<V>, resolve: (v?: V) => void, reject: (reason: unknown) => void): void {
+  #computeWhenPresent(key: K, oldValue: V, fn: (k: K, v: V) => V | undefined | PromiseLike<V | undefined>, resolve: (v?: V) => void, reject: (reason: unknown) => void): void {
     Promise.resolve()
       .then(() => fn(key, oldValue))
       .then((v) => {
@@ -336,6 +360,18 @@ export class ConcurrentMap<K, V> {
 
   /**
    * Computes the value for a key.
+   * The new value will be the return value of calling the given function.
+   * If the given function throws an error, the error is propagated through the returned promise and no value is set or removed.
+   * @param key The key to compute the value for.
+   * @param fn The function to compute the value. Its input will be the key and previous value, or `undefined` if there was no entry yet.
+   * @return A promise that will be resolved with the new value for the key.
+   *         <p>
+   *         If there are any pending actions for the key the returned promise will not be resolved until they have all finished.
+   *         The promise will be rejected if the given function throws an error.
+   */
+  compute(key: K, fn: (k: K, v?: V) => V | PromiseLike<V>): Promise<V>;
+  /**
+   * Computes the value for a key.
    * The new value will be the return value of calling the given function. However, if the given function returns `undefined`, any existing entry is removed instead.
    * If the given function throws an error, the error is propagated through the returned promise and no value is set or removed.
    * @param key The key to compute the value for.
@@ -345,7 +381,8 @@ export class ConcurrentMap<K, V> {
    *         If there are any pending actions for the key the returned promise will not be resolved until they have all finished.
    *         The promise will be rejected if the given function throws an error.
    */
-  compute(key: K, fn: (k: K, v?: V) => FunctionResult<V>): Promise<V | undefined> {
+  compute(key: K, fn: (k: K, v?: V) => V | undefined | PromiseLike<V | undefined>): Promise<V | undefined>;
+  compute(key: K, fn: (k: K, v?: V) => V | undefined | PromiseLike<V | undefined>): Promise<V | undefined> {
     const pending = this.#pending.get(key);
     if (pending === undefined) {
       this.#pending.set(key, []);
@@ -360,7 +397,7 @@ export class ConcurrentMap<K, V> {
     });
   }
 
-  #compute(key: K, fn: (k: K, v?: V) => FunctionResult<V>, resolve: (v?: V) => void, reject: (reason: unknown) => void): void {
+  #compute(key: K, fn: (k: K, v?: V) => V | undefined | PromiseLike<V | undefined>, resolve: (v?: V) => void, reject: (reason: unknown) => void): void {
     const oldValue = this.#current.get(key);
     Promise.resolve()
       .then(() => fn(key, oldValue))
@@ -379,6 +416,18 @@ export class ConcurrentMap<K, V> {
   /**
    * Sets the value for a key, merging it with any existing value if necessary.
    * If there was no entry yet for the key, its value will be set to the given value. Otherwise, the new value will be the return value of calling the given function.
+   * If the given function throws an error, the error is propagated through the returned promise and no value is set or removed.
+   * @param key The key to compute the value for.
+   * @param fn The function to compute the value. Its input will be the previous value and the given value.
+   * @return A promise that will be resolved with the new value for the key.
+   *         <p>
+   *         If there are any pending actions for the key the returned promise will not be resolved until they have all finished.
+   *         The promise will be rejected if the given function throws an error.
+   */
+  merge(key: K, value: V, fn: (oldValue: V, newValue: V) => V | PromiseLike<V>): Promise<V>;
+  /**
+   * Sets the value for a key, merging it with any existing value if necessary.
+   * If there was no entry yet for the key, its value will be set to the given value. Otherwise, the new value will be the return value of calling the given function.
    * However, if the given function returns `undefined`, the entry is removed instead.
    * If the given function throws an error, the error is propagated through the returned promise and no value is set or removed.
    * @param key The key to compute the value for.
@@ -388,7 +437,8 @@ export class ConcurrentMap<K, V> {
    *         If there are any pending actions for the key the returned promise will not be resolved until they have all finished.
    *         The promise will be rejected if the given function throws an error.
    */
-  merge(key: K, value: V, fn: (oldValue: V, newValue: V) => FunctionResult<V>): Promise<V | undefined> {
+  merge(key: K, value: V, fn: (oldValue: V, newValue: V) => V | undefined | PromiseLike<V | undefined>): Promise<V | undefined>;
+  merge(key: K, value: V, fn: (oldValue: V, newValue: V) => V | undefined | PromiseLike<V | undefined>): Promise<V | undefined> {
     const pending = this.#pending.get(key);
     if (pending === undefined) {
       const oldValue = this.#current.get(key);
@@ -415,7 +465,14 @@ export class ConcurrentMap<K, V> {
     });
   }
 
-  #merge(key: K, oldValue: V, newValue: V, fn: (oldValue: V, newValue: V) => FunctionResult<V>, resolve: (v?: V) => void, reject: (reason: unknown) => void): void {
+  #merge(
+    key: K,
+    oldValue: V,
+    newValue: V,
+    fn: (oldValue: V, newValue: V) => V | undefined | PromiseLike<V | undefined>,
+    resolve: (v?: V) => void,
+    reject: (reason: unknown) => void,
+  ): void {
     Promise.resolve()
       .then(() => fn(oldValue, newValue))
       .then((v) => {
