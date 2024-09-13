@@ -296,28 +296,15 @@ export class ConcurrentMap<K, V> {
 
   /**
    * Computes the value for a key only if there is entry for the key already.
-   * The new value will be the return value of calling the given function.
-   * If the given function throws an error, the error is propagated through the returned promise and no value is set or removed.
-   * @param key The key to compute the value for.
-   * @param fn The function to compute the value. Its input will be the key and previous value.
-   * @return A promise that will be resolved with the new value for the key.
-   *         <p>
-   *         If there are any pending actions for the key the returned promise will not be resolved until they have all finished.
-   *         The promise will be rejected if the given function throws an error.
-   */
-  computeIfPresent(key: K, fn: (k: K, v: V) => V | PromiseLike<V>): Promise<V>;
-  /**
-   * Computes the value for a key only if there is entry for the key already.
    * The new value will be the return value of calling the given function. However, if the given function returns `undefined`, the entry is removed instead.
    * If the given function throws an error, the error is propagated through the returned promise and no value is set or removed.
    * @param key The key to compute the value for.
    * @param fn The function to compute the value. Its input will be the key and previous value.
-   * @return A promise that will be resolved with the new value for the key, or `undefined` if the given function returns `undefined`.
+   * @return A promise that will be resolved with the new value for the key, or `undefined` if there was no entry for the given key or if the given function returns `undefined`.
    *         <p>
    *         If there are any pending actions for the key the returned promise will not be resolved until they have all finished.
    *         The promise will be rejected if the given function throws an error.
    */
-  computeIfPresent(key: K, fn: (k: K, v: V) => V | undefined | PromiseLike<V | undefined>): Promise<V | undefined>;
   computeIfPresent(key: K, fn: (k: K, v: V) => V | undefined | PromiseLike<V | undefined>): Promise<V | undefined> {
     const pending = this.#pending.get(key);
     if (pending === undefined) {
