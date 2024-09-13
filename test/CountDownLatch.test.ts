@@ -24,7 +24,7 @@ describe("untimed wait", () => {
     setTimeout(() => latch.countDown(), 20);
     setTimeout(() => latch.countDown(), 50);
 
-    await expectDurationBetween(50, 100, () => latch.wait());
+    await expectDurationBetween(50, 100, () => latch.await());
 
     expect(latch.initialCount()).toBe(2);
     expectCountDownLatch(latch, 0);
@@ -40,7 +40,7 @@ describe("untimed wait", () => {
     latch.countDown();
     expectCountDownLatch(latch, 0);
 
-    await expectResolvedImmediately(() => latch.wait());
+    await expectResolvedImmediately(() => latch.await());
 
     expect(latch.initialCount()).toBe(2);
     expectCountDownLatch(latch, 0);
@@ -56,7 +56,7 @@ describe("timed wait", () => {
     setTimeout(() => latch.countDown(), 20);
     setTimeout(() => latch.countDown(), 50);
 
-    await expectDurationBetween(50, 100, () => latch.wait(100));
+    await expectDurationBetween(50, 100, () => latch.await(100));
 
     expect(latch.initialCount()).toBe(2);
     expectCountDownLatch(latch, 0);
@@ -68,7 +68,7 @@ describe("timed wait", () => {
     expect(latch.currentCount()).toBe(1);
     expect(latch.toString()).toBe("CountDownLatch[count=1]");
 
-    const result = await expectResolvedImmediately(() => latch.wait(timeout).catch(() => false));
+    const result = await expectResolvedImmediately(() => latch.await(timeout).catch(() => false));
 
     expect(result).toBe(false);
     expect(latch.initialCount()).toBe(1);
@@ -80,7 +80,7 @@ describe("timed wait", () => {
     expect(latch.initialCount()).toBe(1);
     expectCountDownLatch(latch, 1);
 
-    const result = await expectDurationBetween(50, 100, () => latch.wait(50).catch(() => false));
+    const result = await expectDurationBetween(50, 100, () => latch.await(50).catch(() => false));
 
     expect(result).toBe(false);
     expect(latch.initialCount()).toBe(1);
@@ -98,7 +98,7 @@ describe("timed wait", () => {
     latch.countDown();
     expectCountDownLatch(latch, 0);
 
-    await expectResolvedImmediately(() => latch.wait(timeout));
+    await expectResolvedImmediately(() => latch.await(timeout));
 
     expect(latch.initialCount()).toBe(2);
     expectCountDownLatch(latch, 0);
@@ -122,7 +122,7 @@ describe("examples", () => {
       const timeout = 10;
 
       let expired: boolean;
-      if ((await latch.wait(timeout).catch(() => false)) !== false) {
+      if ((await latch.await(timeout).catch(() => false)) !== false) {
         // count reached 0
         expired = false;
       } else {
@@ -138,7 +138,7 @@ describe("examples", () => {
       const timeout = 10;
 
       let expired: boolean;
-      if ((await latch.wait(timeout).catch(() => false)) !== false) {
+      if ((await latch.await(timeout).catch(() => false)) !== false) {
         // count reached 0
         expired = false;
       } else {
@@ -160,7 +160,7 @@ describe("examples", () => {
     for (let i = 0; i < 10; i++) {
       new Promise<void>((resolve) => {
         readyLatch.countDown();
-        startLatch.wait().then(() => {
+        startLatch.await().then(() => {
           setTimeout(() => {
             totalCount++;
             resolve();
@@ -170,9 +170,9 @@ describe("examples", () => {
       });
     }
 
-    await readyLatch.wait();
+    await readyLatch.await();
     startLatch.countDown();
-    await finishLatch.wait();
+    await finishLatch.await();
 
     expect(totalCount).toBe(10);
   });

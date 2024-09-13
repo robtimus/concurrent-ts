@@ -10,12 +10,12 @@
 A locking mechanism that allows one or more tasks to wait until a set of operations being performed in other tasks completes.
 It's inspired by Java's [CountDownLatch](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CountDownLatch.html).
 
-A `CountDownLatch` is initialized with a non-negative count. The promises returned by the `wait()` method do not resolve until the current count reaches 0 due to calls to the `countDown()` method. This can occur only once, the count cannot be reset.
+A `CountDownLatch` is initialized with a non-negative count. The promises returned by the `await()` method do not resolve until the current count reaches 0 due to calls to the `countDown()` method. This can occur only once, the count cannot be reset.
 
-The promises returned by the `wait(timeout)` are rejected if the timeout expires before the current count reaches 0. To get a `false` like Java's `CountDownLatch`, simply use  `catch`:
+The promises returned by the `await(timeout)` are rejected if the timeout expires before the current count reaches 0. To get a `false` like Java's `CountDownLatch`, simply use `catch`:
 
 ```typescript
-if (await latch.wait(timeout).catch(() => false) !== false) {
+if (await latch.await(timeout).catch(() => false) !== false) {
   // count reached 0
 } else {
   // timeout expired

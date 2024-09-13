@@ -4,7 +4,7 @@ export class CountDownLatch {
   #waiting: ((value: void) => void)[];
 
   /**
-   * @param count The number of times `countDown` must be invoked before promises returned by `wait` are resolved.
+   * @param count The number of times `countDown` must be invoked before promises returned by `await` are resolved.
    */
   constructor(count: number) {
     if (count < 0) {
@@ -22,7 +22,7 @@ export class CountDownLatch {
    *         <p>
    *         If a timeout is given and it expires, the promise will be rejected.
    */
-  wait(timeout?: number): Promise<void> {
+  await(timeout?: number): Promise<void> {
     if (this.#count === 0) {
       return Promise.resolve();
     }
@@ -47,7 +47,7 @@ export class CountDownLatch {
   }
 
   /**
-   * Decreases the count by one. If the count reaches zero, all promises returned by the wait methods will be resolved.
+   * Decreases the count by one. If the count reaches zero, all promises returned by the `await` methods will be resolved.
    * If the count was already zero nothing happens.
    */
   countDown(): void {

@@ -20,7 +20,7 @@ describe("size", () => {
 
     const latch = new CountDownLatch(1);
 
-    const promises = keys.map((k) => map.computeIfAbsent(k, () => latch.wait().then(() => k + 10)));
+    const promises = keys.map((k) => map.computeIfAbsent(k, () => latch.await().then(() => k + 10)));
 
     expect(map.size).toBe(0);
 
@@ -51,7 +51,7 @@ describe("get", () => {
 
       const latch = new CountDownLatch(1);
 
-      const promises = keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+      const promises = keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
       keys.forEach((k) => expect(map.get(k)).toBeUndefined());
 
@@ -67,7 +67,7 @@ describe("get", () => {
 
       const latch = new CountDownLatch(1);
 
-      const promises = keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+      const promises = keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
       keys.forEach((k) => expect(map.get(k)).toBe(k * 2));
 
@@ -99,7 +99,7 @@ describe("getLatest", () => {
 
       const latch = new CountDownLatch(1);
 
-      keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+      keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
       const promises = keys.map((k) => map.getLatest(k));
 
@@ -115,7 +115,7 @@ describe("getLatest", () => {
 
       const latch = new CountDownLatch(1);
 
-      keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+      keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
       keys.forEach((k) => expect(map.get(k)).toBe(k * 2));
 
@@ -149,7 +149,7 @@ describe("has", () => {
 
       const latch = new CountDownLatch(1);
 
-      const promises = keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+      const promises = keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
       keys.forEach((k) => expect(map.has(k)).toBe(false));
 
@@ -165,7 +165,7 @@ describe("has", () => {
 
       const latch = new CountDownLatch(1);
 
-      const promises = keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+      const promises = keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
       keys.forEach((k) => expect(map.has(k)).toBe(true));
 
@@ -195,7 +195,7 @@ describe("set", () => {
 
       const latch = new CountDownLatch(1);
 
-      keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+      keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
       const promises = keys.map((k) => map.set(k, k * 2));
 
@@ -227,7 +227,7 @@ describe("set", () => {
 
       const latch = new CountDownLatch(1);
 
-      keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+      keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
       const promises = keys.map((k) => map.set(k, k + 10));
 
@@ -260,7 +260,7 @@ describe("delete", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         // don't await the result
         map.clear();
@@ -317,7 +317,7 @@ describe("delete", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         // don't await the result
         map.clear();
@@ -348,7 +348,7 @@ describe("delete", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
         const promises = keys.map((k) => map.delete(k, k * 2));
 
@@ -378,7 +378,7 @@ describe("delete", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
         const promises = keys.map((k) => map.delete(k, k + 10));
 
@@ -427,7 +427,7 @@ describe("clear", () => {
 
     const latch = new CountDownLatch(1);
 
-    keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+    keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
     expect(map.size).toBe(keys.length);
 
@@ -448,7 +448,7 @@ describe("clear", () => {
 
     const latch = new CountDownLatch(1);
 
-    keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+    keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
     expect(map.size).toBe(keys.length);
 
@@ -500,7 +500,7 @@ describe("keys", () => {
 
     const latch = new CountDownLatch(1);
 
-    keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+    keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
     expect(map.size).toBe(keys.length);
 
@@ -548,7 +548,7 @@ describe("values", () => {
 
     const latch = new CountDownLatch(1);
 
-    keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+    keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
     expect(map.size).toBe(keys.length);
 
@@ -596,7 +596,7 @@ describe("entries", () => {
 
     const latch = new CountDownLatch(1);
 
-    keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+    keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
     expect(map.size).toBe(keys.length);
 
@@ -643,7 +643,7 @@ describe("iterator", () => {
 
     const latch = new CountDownLatch(1);
 
-    keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+    keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
     expect(map.size).toBe(keys.length);
 
@@ -675,7 +675,7 @@ describe("setIfAbsent", () => {
 
       const latch = new CountDownLatch(1);
 
-      keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+      keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
       // don't await the result
       map.clear();
@@ -708,7 +708,7 @@ describe("setIfAbsent", () => {
 
       const latch = new CountDownLatch(1);
 
-      keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+      keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
       const promises = keys.map((k) => map.setIfAbsent(k, k + 10));
 
@@ -743,7 +743,7 @@ describe("setIfPresent", () => {
 
       const latch = new CountDownLatch(1);
 
-      keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+      keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
       // don't await the result
       map.clear();
@@ -777,7 +777,7 @@ describe("setIfPresent", () => {
 
       const latch = new CountDownLatch(1);
 
-      keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+      keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
       const promises = keys.map((k) => map.setIfPresent(k, k + 10));
 
@@ -809,7 +809,7 @@ describe("replace", () => {
 
       const latch = new CountDownLatch(1);
 
-      keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+      keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
       // don't await the result
       map.clear();
@@ -840,7 +840,7 @@ describe("replace", () => {
 
       const latch = new CountDownLatch(1);
 
-      keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+      keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
       const promises = keys.map((k) => map.replace(k, k * 2, k - 5));
 
@@ -870,7 +870,7 @@ describe("replace", () => {
 
       const latch = new CountDownLatch(1);
 
-      keys.map((k) => map.compute(k, () => latch.wait().then(() => k + 10)));
+      keys.map((k) => map.compute(k, () => latch.await().then(() => k + 10)));
 
       const promises = keys.map((k) => map.replace(k, k + 10, k - 5));
 
@@ -904,7 +904,7 @@ describe("computeIfAbsent", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         // don't await the result
         map.clear();
@@ -939,7 +939,7 @@ describe("computeIfAbsent", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         // don't await the result
         map.clear();
@@ -976,7 +976,7 @@ describe("computeIfAbsent", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         const promises = keys.map((k) => map.computeIfAbsent(k, () => undefined));
 
@@ -1008,7 +1008,7 @@ describe("computeIfAbsent", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         const promises = keys.map((k) => map.computeIfAbsent(k, (i) => i + 10));
 
@@ -1044,7 +1044,7 @@ describe("computeIfPresent", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         // don't await the result
         map.clear();
@@ -1079,7 +1079,7 @@ describe("computeIfPresent", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         // don't await the result
         map.clear();
@@ -1116,7 +1116,7 @@ describe("computeIfPresent", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         const promises = keys.map((k) => map.computeIfPresent(k, () => undefined));
 
@@ -1148,7 +1148,7 @@ describe("computeIfPresent", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         const promises = keys.map((k) => map.computeIfPresent(k, (i) => i + 10));
 
@@ -1184,7 +1184,7 @@ describe("compute", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         // don't await the result
         map.clear();
@@ -1219,7 +1219,7 @@ describe("compute", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         // don't await the result
         map.clear();
@@ -1256,7 +1256,7 @@ describe("compute", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         const promises = keys.map((k) => map.compute(k, () => undefined));
 
@@ -1288,7 +1288,7 @@ describe("compute", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         const promises = keys.map((k) => map.compute(k, (t, u) => t + (u ?? -100)));
 
@@ -1324,7 +1324,7 @@ describe("merge", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         // don't await the result
         map.clear();
@@ -1359,7 +1359,7 @@ describe("merge", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         // don't await the result
         map.clear();
@@ -1396,7 +1396,7 @@ describe("merge", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         const promises = keys.map((k) => map.merge(k, k + 10, () => undefined));
 
@@ -1428,7 +1428,7 @@ describe("merge", () => {
 
         const latch = new CountDownLatch(1);
 
-        keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+        keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
         const promises = keys.map((k) => map.merge(k, k + 10, (t, u) => t + u));
 
@@ -1462,7 +1462,7 @@ describe("forEach", () => {
 
     const latch = new CountDownLatch(1);
 
-    const promises = keys.map((k) => map.compute(k, () => latch.wait().then(() => k - 5)));
+    const promises = keys.map((k) => map.compute(k, () => latch.await().then(() => k - 5)));
 
     const args: [number, number, ConcurrentMap<number, number>][] = [];
     map.forEach(function (v, k, m) {

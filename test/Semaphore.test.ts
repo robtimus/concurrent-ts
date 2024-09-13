@@ -138,7 +138,7 @@ describe("tryAcquire", () => {
     const releaseLatch = new CountDownLatch(1);
     const releasedLatch = new CountDownLatch(1);
     setTimeout(async () => {
-      await releaseLatch.wait();
+      await releaseLatch.await();
       semaphore.release(10);
       releasedLatch.countDown();
     }, 100);
@@ -154,7 +154,7 @@ describe("tryAcquire", () => {
     expectSemaphore(semaphore, 1);
 
     releaseLatch.countDown();
-    await releasedLatch.wait();
+    await releasedLatch.await();
 
     expectSemaphore(semaphore, 11);
   });
@@ -214,7 +214,7 @@ test("waiting acquirers", async () => {
 
   expectSemaphore(semaphore, 0);
 
-  await waitingLatch.wait();
+  await waitingLatch.await();
 
   expectSemaphore(semaphore, 0, true, 2);
 
