@@ -323,3 +323,7 @@ class WriteLockImpl implements WriteLock {
     return `WriteLock[held=${this.#held}]`;
   }
 }
+
+Object.freeze(ReadWriteLock.prototype);
+Object.freeze(ReadLockImpl.prototype);
+Object.freeze(WriteLockImpl.prototype);

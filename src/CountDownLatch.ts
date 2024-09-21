@@ -79,3 +79,5 @@ export class CountDownLatch {
     return `CountDownLatch[count=${this.#count}]`;
   }
 }
+
+Object.freeze(CountDownLatch.prototype);

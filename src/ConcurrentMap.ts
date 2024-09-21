@@ -507,3 +507,5 @@ export class ConcurrentMap<K, V> {
     }
   }
 }
+
+Object.freeze(ConcurrentMap.prototype);

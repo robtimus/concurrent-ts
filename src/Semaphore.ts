@@ -178,3 +178,5 @@ export class Semaphore {
     return `Semaphore[permits=${this.#permits}]`;
   }
 }
+
+Object.freeze(Semaphore.prototype);
