@@ -1,35 +1,57 @@
-import { performance } from "perf_hooks";
+const originalSetTimeout = global.setTimeout;
+const originalClearTimeout = global.clearTimeout;
 
-async function expectDuration<T>(func: () => Promise<T>, expectation: (duration: number) => void): Promise<T> {
-  const promise = func();
+let capturedTimeouts: number[];
+let capturedTimers: { timer: NodeJS.Timeout; timeout: number }[];
 
-  const start = performance.now();
-  const result = await promise;
-  const end = performance.now();
+const capturingSetTimeout = (callback: () => void, timeout: number): NodeJS.Timeout => {
+  const timer = originalSetTimeout(() => {
+    capturedTimeouts.push(timeout);
+    callback();
+    capturedTimers = capturedTimers.filter((t) => t.timer !== timer);
+  }, timeout);
+  capturedTimers.push({ timer, timeout });
+  return timer;
+};
 
-  expectation(end - start);
+const capturingClearTimeout = (timeoutId: NodeJS.Timeout): void => {
+  capturedTimers = capturedTimers.filter((t) => t.timer !== timeoutId);
+  originalClearTimeout(timeoutId);
+};
 
-  return result;
+export function captureTimeouts() {
+  capturedTimeouts = [];
+  capturedTimers = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  global.setTimeout = capturingSetTimeout as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  global.clearTimeout = capturingClearTimeout as any;
 }
 
-export async function expectDurationAtLeast<T>(minDuration: number, func: () => Promise<T>): Promise<T> {
-  // cannot guarantee that a setTimeout doesn't resolve just slightly early, so subtract 1ms
-  return expectDuration(func, (duration) => expect(duration).toBeGreaterThanOrEqual(minDuration - 1));
+export function expectedCapturedTimeouts(...expectedTimeouts: number[]) {
+  if (global.setTimeout === originalSetTimeout) {
+    throw new Error("captureSetTimeout not called");
+  }
+  expect(capturedTimeouts).toStrictEqual(expectedTimeouts);
 }
 
-export async function expectDurationAtMost<T>(maxDuration: number, func: () => Promise<T>): Promise<T> {
-  return expectDuration(func, (duration) => expect(duration).toBeLessThanOrEqual(maxDuration));
+export function expectedRemainingTimeouts(...expectedTimeouts: number[]) {
+  if (global.clearTimeout === originalClearTimeout) {
+    throw new Error("captureSetTimeout not called");
+  }
+  const remainingTimeouts = capturedTimers.map((t) => t.timeout);
+  expect(remainingTimeouts).toStrictEqual(expectedTimeouts);
 }
 
-export async function expectResolvedImmediately<T>(func: () => Promise<T>): Promise<T> {
-  // cannot guarantee that this occurs immediately, so use a very small max duration
-  return expectDurationAtMost(2, func);
+export function clearCapturedTimeouts() {
+  capturedTimeouts = [];
 }
 
-export async function expectDurationBetween<T>(minDuration: number, maxDuration: number, func: () => Promise<T>): Promise<T> {
-  // cannot guarantee that a setTimeout doesn't resolve just slightly early, so subtract 1ms
-  return expectDuration(func, (duration) => {
-    expect(duration).toBeGreaterThanOrEqual(minDuration - 1);
-    expect(duration).toBeLessThanOrEqual(maxDuration);
-  });
+export function clearRemainingTimeouts() {
+  capturedTimers.forEach((t) => capturingClearTimeout(t.timer));
+}
+
+export function restoreTimeouts() {
+  global.setTimeout = originalSetTimeout;
+  global.clearTimeout = originalClearTimeout;
 }

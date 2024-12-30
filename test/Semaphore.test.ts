@@ -1,5 +1,5 @@
 import { CountDownLatch, Semaphore } from "../src";
-import { expectDurationAtLeast, expectDurationBetween, expectResolvedImmediately } from "./testUtil";
+import { captureTimeouts, expectedCapturedTimeouts, expectedRemainingTimeouts, restoreTimeouts } from "./testUtil";
 
 function expectSemaphore(semaphore: Semaphore, availablePermits: number, hasWaitingAcquirers = false, waitingAcquirerCount = 0): void {
   expect(semaphore.availablePermits()).toBe(availablePermits);
@@ -17,6 +17,10 @@ test("negative permits", () => {
 });
 
 describe("acquire", () => {
+  beforeEach(() => captureTimeouts());
+
+  afterEach(() => restoreTimeouts());
+
   test("negative permits", () => {
     const semaphore = new Semaphore(1);
     expectSemaphore(semaphore, 1);
@@ -41,7 +45,10 @@ describe("acquire", () => {
     setTimeout(() => semaphore.release(), 20);
     setTimeout(() => semaphore.release(), 50);
 
-    await expectDurationBetween(50, 100, () => semaphore.acquire(2));
+    await semaphore.acquire(2);
+
+    expectedCapturedTimeouts(20, 50);
+    expectedRemainingTimeouts();
 
     expectSemaphore(semaphore, 0);
   });
@@ -50,13 +57,20 @@ describe("acquire", () => {
     const semaphore = new Semaphore(3);
     expectSemaphore(semaphore, 3);
 
-    await expectResolvedImmediately(() => semaphore.acquire(2));
+    await semaphore.acquire(2);
+
+    expectedCapturedTimeouts();
+    expectedRemainingTimeouts();
 
     expectSemaphore(semaphore, 1);
   });
 });
 
 describe("tryAcquire", () => {
+  beforeEach(() => captureTimeouts());
+
+  afterEach(() => restoreTimeouts());
+
   describe("without timeout", () => {
     test("negative permits", () => {
       const semaphore = new Semaphore(1);
@@ -105,11 +119,12 @@ describe("tryAcquire", () => {
       const semaphore = new Semaphore(1);
       expectSemaphore(semaphore, 1);
 
-      const result = await expectResolvedImmediately(() =>
-        semaphore.tryAcquire({
-          timeout: 100,
-        }),
-      );
+      const result = await semaphore.tryAcquire({
+        timeout: 100,
+      });
+
+      expectedCapturedTimeouts();
+      expectedRemainingTimeouts();
 
       expect(result).toBe(true);
       expectSemaphore(semaphore, 0);
@@ -120,12 +135,13 @@ describe("tryAcquire", () => {
     const semaphore = new Semaphore(1);
     expectSemaphore(semaphore, 1);
 
-    const result = await expectResolvedImmediately(() =>
-      semaphore.tryAcquire({
-        permits: 2,
-        timeout,
-      }),
-    );
+    const result = await semaphore.tryAcquire({
+      permits: 2,
+      timeout,
+    });
+
+    expectedCapturedTimeouts();
+    expectedRemainingTimeouts();
 
     expect(result).toBe(false);
     expectSemaphore(semaphore, 1);
@@ -143,18 +159,21 @@ describe("tryAcquire", () => {
       releasedLatch.countDown();
     }, 100);
 
-    const result = await expectDurationAtLeast(50, () =>
-      semaphore.tryAcquire({
-        permits: 2,
-        timeout: 50,
-      }),
-    );
+    const result = await semaphore.tryAcquire({
+      permits: 2,
+      timeout: 50,
+    });
+
+    expectedCapturedTimeouts(50);
+    expectedRemainingTimeouts(100);
 
     expect(result).toBe(false);
     expectSemaphore(semaphore, 1);
 
     releaseLatch.countDown();
     await releasedLatch.await();
+
+    expectedRemainingTimeouts();
 
     expectSemaphore(semaphore, 11);
   });
@@ -166,12 +185,13 @@ describe("tryAcquire", () => {
     setTimeout(() => semaphore.release(2), 20);
     setTimeout(() => semaphore.release(8), 50);
 
-    const result = await expectDurationBetween(50, 100, () =>
-      semaphore.tryAcquire({
-        permits: 5,
-        timeout: 100,
-      }),
-    );
+    const result = await semaphore.tryAcquire({
+      permits: 5,
+      timeout: 100,
+    });
+
+    expectedCapturedTimeouts(20, 50);
+    expectedRemainingTimeouts();
 
     expect(result).toBe(true);
     expectSemaphore(semaphore, 6);

@@ -1,5 +1,5 @@
 import { ReadLock, ReadWriteLock, WriteLock } from "../src";
-import { expectDurationBetween, expectResolvedImmediately } from "./testUtil";
+import { captureTimeouts, clearCapturedTimeouts, expectedCapturedTimeouts, expectedRemainingTimeouts, restoreTimeouts } from "./testUtil";
 
 function expectReadWriteLock(lock: ReadWriteLock, isReadLockHeld: boolean, isWriteLockHeld: boolean, currentReadCount: number, waitingReadCount = 0, waitingWriteCount = 0): void {
   expect(lock.isReadLockHeld()).toBe(isReadLockHeld);
@@ -10,6 +10,10 @@ function expectReadWriteLock(lock: ReadWriteLock, isReadLockHeld: boolean, isWri
 }
 
 describe("acquire read locks", () => {
+  beforeEach(() => captureTimeouts());
+
+  afterEach(() => restoreTimeouts());
+
   describe("without timeout", () => {
     test("acquire multiple without locks", async () => {
       const lock = new ReadWriteLock();
@@ -22,7 +26,10 @@ describe("acquire read locks", () => {
 
       expectReadWriteLock(lock, true, false, 10);
 
-      const readLocks = await expectResolvedImmediately(() => Promise.all(readLockPromises));
+      const readLocks = await Promise.all(readLockPromises);
+
+      expectedCapturedTimeouts();
+      expectedRemainingTimeouts();
 
       expectReadWriteLock(lock, true, false, 10);
 
@@ -50,7 +57,10 @@ describe("acquire read locks", () => {
 
       setTimeout(() => writeLock.release(), 50);
 
-      const readLocks = await expectDurationBetween(50, 100, () => Promise.all(readLockPromises));
+      const readLocks = await Promise.all(readLockPromises);
+
+      expectedCapturedTimeouts(50);
+      expectedRemainingTimeouts();
 
       expectReadWriteLock(lock, true, false, 10);
 
@@ -79,7 +89,10 @@ describe("acquire read locks", () => {
 
         expectReadWriteLock(lock, true, false, 1, 10, 1);
 
-        const readLocks = await expectDurationBetween(50, 100, () => Promise.all(readLockPromises));
+        const readLocks = await Promise.all(readLockPromises);
+
+        expectedCapturedTimeouts(0, 50);
+        expectedRemainingTimeouts();
 
         expectReadWriteLock(lock, true, false, 10, 0, 0);
 
@@ -106,7 +119,10 @@ describe("acquire read locks", () => {
 
         expectReadWriteLock(lock, true, false, 11, 0, 1);
 
-        const readLocks = await expectResolvedImmediately(() => Promise.all(readLockPromises));
+        const readLocks = await Promise.all(readLockPromises);
+
+        expectedCapturedTimeouts();
+        expectedRemainingTimeouts();
 
         expectReadWriteLock(lock, true, false, 11, 0, 1);
 
@@ -135,7 +151,10 @@ describe("acquire read locks", () => {
 
       expectReadWriteLock(lock, true, false, 10);
 
-      const readLocks = await expectResolvedImmediately(() => Promise.all(readLockPromises));
+      const readLocks = await Promise.all(readLockPromises);
+
+      expectedCapturedTimeouts();
+      expectedRemainingTimeouts();
 
       expectReadWriteLock(lock, true, false, 10);
 
@@ -167,7 +186,10 @@ describe("acquire read locks", () => {
 
         expectReadWriteLock(lock, false, true, 0, 0, 0);
 
-        const result = await expectResolvedImmediately(() => Promise.all(readLockResultPromises));
+        const result = await Promise.all(readLockResultPromises);
+
+        expectedCapturedTimeouts();
+        expectedRemainingTimeouts();
 
         expect(result).toStrictEqual(Array(10).fill(false));
 
@@ -193,7 +215,10 @@ describe("acquire read locks", () => {
 
         expectReadWriteLock(lock, false, true, 0, 10, 0);
 
-        const result = await expectDurationBetween(50, 100, () => Promise.all(readLockResultPromises));
+        const result = await Promise.all(readLockResultPromises);
+
+        expectedCapturedTimeouts(...Array<number>(10).fill(50));
+        expectedRemainingTimeouts();
 
         expect(result).toStrictEqual(Array(10).fill(false));
 
@@ -221,7 +246,10 @@ describe("acquire read locks", () => {
 
         setTimeout(() => writeLock.release(), 50);
 
-        const readLocks = await expectDurationBetween(50, 100, () => Promise.all(readLockPromises));
+        const readLocks = await Promise.all(readLockPromises);
+
+        expectedCapturedTimeouts(50);
+        expectedRemainingTimeouts();
 
         expectReadWriteLock(lock, true, false, 10);
 
@@ -251,7 +279,10 @@ describe("acquire read locks", () => {
 
         expectReadWriteLock(lock, true, false, 1, 10, 1);
 
-        const readLocks = await expectDurationBetween(50, 100, () => Promise.all(readLockPromises));
+        const readLocks = await Promise.all(readLockPromises);
+
+        expectedCapturedTimeouts(0, 50);
+        expectedRemainingTimeouts();
 
         expectReadWriteLock(lock, true, false, 10, 0, 0);
 
@@ -278,7 +309,10 @@ describe("acquire read locks", () => {
 
         expectReadWriteLock(lock, true, false, 11, 0, 1);
 
-        const readLocks = await expectResolvedImmediately(() => Promise.all(readLockPromises));
+        const readLocks = await Promise.all(readLockPromises);
+
+        expectedCapturedTimeouts();
+        expectedRemainingTimeouts();
 
         expectReadWriteLock(lock, true, false, 11, 0, 1);
 
@@ -313,6 +347,10 @@ describe("release read lock", () => {
 });
 
 describe("acquire write locks", () => {
+  beforeEach(() => captureTimeouts());
+
+  afterEach(() => restoreTimeouts());
+
   describe("without timeout", () => {
     test("acquire multiple without locks", async () => {
       const lock = new ReadWriteLock();
@@ -325,14 +363,22 @@ describe("acquire write locks", () => {
 
       expectReadWriteLock(lock, false, true, 0, 0, 9);
 
-      let writeLock = await expectResolvedImmediately(() => writeLockPromises.shift()!);
+      let writeLock = await writeLockPromises.shift()!;
+
+      expectedCapturedTimeouts();
+      expectedRemainingTimeouts();
+      clearCapturedTimeouts();
 
       while (writeLockPromises.length > 0) {
         expectReadWriteLock(lock, false, true, 0, 0, writeLockPromises.length);
 
         setTimeout(() => writeLock.release(), 50);
 
-        writeLock = await expectDurationBetween(50, 100, () => writeLockPromises.shift()!);
+        writeLock = await writeLockPromises.shift()!;
+
+        expectedCapturedTimeouts(50);
+        expectedRemainingTimeouts();
+        clearCapturedTimeouts();
       }
 
       expectReadWriteLock(lock, false, true, 0);
@@ -359,14 +405,22 @@ describe("acquire write locks", () => {
 
       setTimeout(() => readLock.release(), 50);
 
-      let writeLock = await expectDurationBetween(50, 100, () => writeLockPromises.shift()!);
+      let writeLock = await writeLockPromises.shift()!;
+
+      expectedCapturedTimeouts(50);
+      expectedRemainingTimeouts();
+      clearCapturedTimeouts();
 
       while (writeLockPromises.length > 0) {
         expectReadWriteLock(lock, false, true, 0, 0, writeLockPromises.length);
 
         setTimeout(() => writeLock.release(), 50);
 
-        writeLock = await expectDurationBetween(50, 100, () => writeLockPromises.shift()!);
+        writeLock = await writeLockPromises.shift()!;
+
+        expectedCapturedTimeouts(50);
+        expectedRemainingTimeouts();
+        clearCapturedTimeouts();
       }
 
       expectReadWriteLock(lock, false, true, 0);
@@ -390,7 +444,10 @@ describe("acquire write locks", () => {
 
         expectReadWriteLock(lock, false, true, 0, 0, 0);
 
-        const result = await expectResolvedImmediately(() => Promise.all(writeLockPromises));
+        const result = await Promise.all(writeLockPromises);
+
+        expectedCapturedTimeouts();
+        expectedRemainingTimeouts();
 
         const writeLock = result.shift()!;
 
@@ -413,7 +470,11 @@ describe("acquire write locks", () => {
 
         expectReadWriteLock(lock, false, true, 0, 0, 9);
 
-        const result = await expectDurationBetween(50, 100, () => Promise.all(writeLockPromises));
+        const result = await Promise.all(writeLockPromises);
+
+        // The first write lock is acquired immediately
+        expectedCapturedTimeouts(...Array<number>(9).fill(50));
+        expectedRemainingTimeouts();
 
         const writeLock = result.shift()!;
 
@@ -436,14 +497,21 @@ describe("acquire write locks", () => {
 
         expectReadWriteLock(lock, false, true, 0, 0, 9);
 
-        let writeLock = await expectResolvedImmediately(() => writeLockPromises.shift()!);
+        let writeLock = await writeLockPromises.shift()!;
+
+        expectedCapturedTimeouts();
+        expectedRemainingTimeouts(...Array<number>(writeLockPromises.length).fill(200));
 
         while (writeLockPromises.length > 0) {
           expectReadWriteLock(lock, false, true, 0, 0, writeLockPromises.length);
 
           setTimeout(() => writeLock.release(), 5);
 
-          writeLock = await expectDurationBetween(5, 25, () => writeLockPromises.shift()!);
+          writeLock = await writeLockPromises.shift()!;
+
+          expectedCapturedTimeouts(5);
+          expectedRemainingTimeouts(...Array<number>(writeLockPromises.length).fill(200));
+          clearCapturedTimeouts();
         }
 
         expectReadWriteLock(lock, false, true, 0);
@@ -470,7 +538,10 @@ describe("acquire write locks", () => {
 
         expectReadWriteLock(lock, true, false, 1, 0, 0);
 
-        const result = await expectResolvedImmediately(() => Promise.all(writeLockResultPromises));
+        const result = await Promise.all(writeLockResultPromises);
+
+        expectedCapturedTimeouts();
+        expectedRemainingTimeouts();
 
         expect(result).toStrictEqual(Array(10).fill(false));
 
@@ -494,7 +565,10 @@ describe("acquire write locks", () => {
 
         expectReadWriteLock(lock, true, false, 1, 0, 10);
 
-        const result = await expectDurationBetween(50, 100, () => Promise.all(writeLockResultPromises));
+        const result = await Promise.all(writeLockResultPromises);
+
+        expectedCapturedTimeouts(...Array<number>(10).fill(50));
+        expectedRemainingTimeouts();
 
         expect(result).toStrictEqual(Array(10).fill(false));
 
@@ -520,14 +594,22 @@ describe("acquire write locks", () => {
 
         setTimeout(() => readLock.release(), 50);
 
-        let writeLock = await expectDurationBetween(50, 100, () => writeLockPromises.shift()!);
+        let writeLock = await writeLockPromises.shift()!;
+
+        expectedCapturedTimeouts(50);
+        expectedRemainingTimeouts(...Array<number>(writeLockPromises.length).fill(200));
+        clearCapturedTimeouts();
 
         while (writeLockPromises.length > 0) {
           expectReadWriteLock(lock, false, true, 0, 0, writeLockPromises.length);
 
           setTimeout(() => writeLock.release(), 5);
 
-          writeLock = await expectDurationBetween(5, 25, () => writeLockPromises.shift()!);
+          writeLock = await writeLockPromises.shift()!;
+
+          expectedCapturedTimeouts(5);
+          expectedRemainingTimeouts(...Array<number>(writeLockPromises.length).fill(200));
+          clearCapturedTimeouts();
         }
 
         expectReadWriteLock(lock, false, true, 0);
@@ -627,6 +709,10 @@ describe("release mixed locks", () => {
 });
 
 describe("upgrade to write lock", () => {
+  beforeEach(() => captureTimeouts());
+
+  afterEach(() => restoreTimeouts());
+
   test("no longer held", async () => {
     const lock = new ReadWriteLock();
     expectReadWriteLock(lock, false, false, 0);
@@ -650,7 +736,10 @@ describe("upgrade to write lock", () => {
 
       expectReadWriteLock(lock, true, false, 1);
 
-      const writeLock = await expectResolvedImmediately(() => readLock.upgradeToWriteLock());
+      const writeLock = await readLock.upgradeToWriteLock();
+
+      expectedCapturedTimeouts();
+      expectedRemainingTimeouts();
 
       expect(readLock.isHeld()).toBe(false);
 
@@ -676,9 +765,12 @@ describe("upgrade to write lock", () => {
 
       expectReadWriteLock(lock, true, false, 1, 0, 1);
 
-      setTimeout(async () => (await otherReadLock).release(), 50);
+      setTimeout(() => otherReadLock.release(), 50);
 
-      const writeLock = await expectDurationBetween(50, 100, () => upgradePromise);
+      const writeLock = await upgradePromise;
+
+      expectedCapturedTimeouts(50);
+      expectedRemainingTimeouts();
 
       expectReadWriteLock(lock, false, true, 0);
 
@@ -704,7 +796,10 @@ describe("upgrade to write lock", () => {
 
       setTimeout(async () => (await writeLockPromise).release(), 50);
 
-      const writeLock = await expectDurationBetween(50, 100, () => upgradePromise);
+      const writeLock = await upgradePromise;
+
+      expectedCapturedTimeouts(50);
+      expectedRemainingTimeouts();
 
       expectReadWriteLock(lock, false, true, 0);
 
@@ -723,7 +818,10 @@ describe("upgrade to write lock", () => {
 
       expectReadWriteLock(lock, true, false, 1);
 
-      const writeLock = await expectResolvedImmediately(() => readLock.upgradeToWriteLock(100));
+      const writeLock = await readLock.upgradeToWriteLock(100);
+
+      expectedCapturedTimeouts();
+      expectedRemainingTimeouts();
 
       expect(readLock.isHeld()).toBe(false);
 
@@ -750,9 +848,12 @@ describe("upgrade to write lock", () => {
 
         expectReadWriteLock(lock, true, false, 1, 0, 1);
 
-        setTimeout(async () => (await otherReadLock).release(), 50);
+        setTimeout(() => otherReadLock.release(), 50);
 
-        const writeLock = await expectDurationBetween(50, 100, () => upgradePromise);
+        const writeLock = await upgradePromise;
+
+        expectedCapturedTimeouts(50);
+        expectedRemainingTimeouts();
 
         expectReadWriteLock(lock, false, true, 0);
 
@@ -778,7 +879,10 @@ describe("upgrade to write lock", () => {
 
         setTimeout(async () => (await writeLockPromise).release(), 50);
 
-        const writeLock = await expectDurationBetween(50, 100, () => upgradePromise);
+        const writeLock = await upgradePromise;
+
+        expectedCapturedTimeouts(50);
+        expectedRemainingTimeouts();
 
         expectReadWriteLock(lock, false, true, 0);
 
@@ -798,7 +902,10 @@ describe("upgrade to write lock", () => {
 
         expectReadWriteLock(lock, true, false, 2);
 
-        const result = await expectResolvedImmediately(() => readLock.upgradeToWriteLock(timeout).catch(() => false));
+        const result = await readLock.upgradeToWriteLock(timeout).catch(() => false);
+
+        expectedCapturedTimeouts();
+        expectedRemainingTimeouts();
 
         expect(result).toBe(false);
         expect(readLock.isHeld()).toBe(false);
@@ -819,7 +926,10 @@ describe("upgrade to write lock", () => {
 
         expectReadWriteLock(lock, true, false, 2);
 
-        const result = await expectResolvedImmediately(() => readLock.upgradeToWriteLock(timeout).catch(() => false));
+        const result = await readLock.upgradeToWriteLock(timeout).catch(() => false);
+
+        expectedCapturedTimeouts();
+        expectedRemainingTimeouts();
 
         expect(result).toBe(false);
         expect(readLock.isHeld()).toBe(false);
@@ -840,7 +950,10 @@ describe("upgrade to write lock", () => {
 
         expectReadWriteLock(lock, true, false, 1, 0, 1);
 
-        const result = await expectResolvedImmediately(() => readLock.upgradeToWriteLock(timeout).catch(() => false));
+        const result = await readLock.upgradeToWriteLock(timeout).catch(() => false);
+
+        expectedCapturedTimeouts();
+        expectedRemainingTimeouts();
 
         expect(result).toBe(false);
         expect(readLock.isHeld()).toBe(false);
@@ -870,7 +983,10 @@ describe("upgrade to write lock", () => {
 
         expectReadWriteLock(lock, true, false, 1, 0, 1);
 
-        const result = await expectDurationBetween(10, 25, () => upgradePromise.catch(() => false));
+        const result = await upgradePromise.catch(() => false);
+
+        expectedCapturedTimeouts(10);
+        expectedRemainingTimeouts();
 
         expect(result).toBe(false);
         expectReadWriteLock(lock, true, false, 1);
@@ -895,7 +1011,10 @@ describe("upgrade to write lock", () => {
 
         expectReadWriteLock(lock, false, true, 0, 0, 1);
 
-        const result = await expectDurationBetween(10, 25, () => upgradePromise.catch(() => false));
+        const result = await upgradePromise.catch(() => false);
+
+        expectedCapturedTimeouts(10);
+        expectedRemainingTimeouts();
 
         expect(result).toBe(false);
         expectReadWriteLock(lock, false, true, 0);
