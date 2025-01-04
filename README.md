@@ -5,7 +5,7 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=robtimus%3Aconcurrent&metric=coverage)](https://sonarcloud.io/summary/overall?id=robtimus%3Aconcurrent)
 [![Known Vulnerabilities](https://snyk.io/test/github/robtimus/concurrent-ts/badge.svg)](https://snyk.io/test/github/robtimus/concurrent-ts)
 
-## [CountDownLatch](https://robtimus.github.io/concurrent/classes/CountDownLatch.CountDownLatch.html)
+## [CountDownLatch](https://robtimus.github.io/concurrent-ts/classes/CountDownLatch.CountDownLatch.html)
 
 A locking mechanism that allows one or more tasks to wait until a set of operations being performed in other tasks completes.
 It's inspired by Java's [CountDownLatch](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CountDownLatch.html).
@@ -53,7 +53,7 @@ startLatch.countDown();
 await finishLatch.await();
 ```
 
-## [Semaphore](https://robtimus.github.io/concurrent/classes/Semaphore.Semaphore.html)
+## [Semaphore](https://robtimus.github.io/concurrent-ts/classes/Semaphore.Semaphore.html)
 
 A port of Java's [Semaphore](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/Semaphore.html).
 
@@ -80,11 +80,11 @@ function setValue(v: string): void {
 }
 ```
 
-## [ReadWriteLock](https://robtimus.github.io/concurrent/classes/ReadWriteLock.ReadWriteLock.html)
+## [ReadWriteLock](https://robtimus.github.io/concurrent-ts/classes/ReadWriteLock.ReadWriteLock.html)
 
 A locking mechanism that allows multiple concurrent readers, but only one writer at a time.
 It's inspired by both Java's [ReadWriteLock](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/ReadWriteLock.html) and .NET's [ReaderWriterLockSlim](https://learn.microsoft.com/en-us/dotnet/api/system.threading.readerwriterlockslim).
-Unlike both of these, acquiring a lock returns an object that implements [ReadLock](https://robtimus.github.io/concurrent/interfaces/ReadWriteLock.ReadLock.html) or [WriteLock](https://robtimus.github.io/concurrent/interfaces/ReadWriteLock.WriteLock.html). This allows a specific lock to be released, something that's enforced in Java and .NET by releasing locks on the same thread on which they were acquired.
+Unlike both of these, acquiring a lock returns an object that implements [ReadLock](https://robtimus.github.io/concurrent-ts/interfaces/ReadWriteLock.ReadLock.html) or [WriteLock](https://robtimus.github.io/concurrent-ts/interfaces/ReadWriteLock.WriteLock.html). This allows a specific lock to be released, something that's enforced in Java and .NET by releasing locks on the same thread on which they were acquired.
 
 ### Fairness
 
@@ -132,7 +132,7 @@ class CachedData<T> {
 }
 ```
 
-## [ConcurrentMap](https://robtimus.github.io/concurrent/classes/ConcurrentMap.ConcurrentMap.html)
+## [ConcurrentMap](https://robtimus.github.io/concurrent-ts/classes/ConcurrentMap.ConcurrentMap.html)
 
 An object similar to [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) that allows concurrent modification.
 It's inspired by Java's [ConcurrentHashMap](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html).
