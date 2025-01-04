@@ -1,5 +1,5 @@
 # @robtimus/concurrent
-[![npm](https://img.shields.io/npm/v/@robtimus/connect-client-sdk)](https://www.npmjs.com/package/@robtimus/concurrent)
+[![npm](https://img.shields.io/npm/v/@robtimus/concurrent)](https://www.npmjs.com/package/@robtimus/concurrent)
 [![Build Status](https://github.com/robtimus/concurrent-ts/actions/workflows/build.yml/badge.svg)](https://github.com/robtimus/concurrent-ts/actions/workflows/build.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=robtimus%3Aconcurrent&metric=alert_status)](https://sonarcloud.io/summary/overall?id=robtimus%3Aconcurrent)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=robtimus%3Aconcurrent&metric=coverage)](https://sonarcloud.io/summary/overall?id=robtimus%3Aconcurrent)
