@@ -47,10 +47,6 @@ export function clearCapturedTimeouts() {
   capturedTimeouts = [];
 }
 
-export function clearRemainingTimeouts() {
-  capturedTimers.forEach((t) => capturingClearTimeout(t.timer));
-}
-
 export function restoreTimeouts() {
   global.setTimeout = originalSetTimeout;
   global.clearTimeout = originalClearTimeout;
