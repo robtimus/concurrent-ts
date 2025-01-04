@@ -1,6 +1,6 @@
 {
   "name": "@robtimus/concurrent",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Utility classes commonly useful in concurrent programming",
   "homepage": "https://github.com/robtimus/concurrent-ts",
   "bugs": {
