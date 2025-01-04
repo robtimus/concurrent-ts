@@ -56,9 +56,9 @@ export interface ReadWriteLockOptions {
 }
 
 export class ReadWriteLock {
-  #counts: Record<LockType, number>;
+  readonly #counts: Record<LockType, number>;
   #waiting: Lock[];
-  #fair: boolean;
+  readonly #fair: boolean;
 
   constructor(options?: ReadWriteLockOptions) {
     this.#counts = {
@@ -141,13 +141,13 @@ export class ReadWriteLock {
       });
     }
     if (timeout <= 0) {
-      return Promise.reject("Timeout expired");
+      return Promise.reject(new Error("Timeout expired"));
     }
     return new Promise<T>((resolve, reject) => {
       let lock: Lock | undefined = undefined;
       const timer = setTimeout(() => {
         this.#waiting = this.#waiting.filter((l) => l !== lock);
-        reject("Timeout expired");
+        reject(new Error("Timeout expired"));
       }, timeout);
       lock = {
         type,
@@ -250,8 +250,8 @@ export class ReadWriteLock {
 
 class ReadLockImpl implements ReadLock {
   #held: boolean;
-  #release: () => void;
-  #acquireWriteLock: (timeout?: number) => Promise<WriteLock>;
+  readonly #release: () => void;
+  readonly #acquireWriteLock: (timeout?: number) => Promise<WriteLock>;
 
   constructor(release: () => void, acquireWriteLock: (timeout?: number) => Promise<WriteLock>) {
     this.#held = true;
@@ -287,8 +287,8 @@ class ReadLockImpl implements ReadLock {
 
 class WriteLockImpl implements WriteLock {
   #held: boolean;
-  #release: () => void;
-  #downGradeToReadLock: () => ReadLock;
+  readonly #release: () => void;
+  readonly #downGradeToReadLock: () => ReadLock;
 
   constructor(release: () => void, downGradeToReadLock: () => ReadLock) {
     this.#held = true;

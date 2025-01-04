@@ -30,13 +30,13 @@ export class CountDownLatch {
       return new Promise<void>((resolve) => this.#waiting.push(resolve));
     }
     if (timeout <= 0) {
-      return Promise.reject("Timeout expired");
+      return Promise.reject(new Error("Timeout expired"));
     }
     return new Promise<void>((resolve, reject) => {
       let callback: ((value: void) => void) | undefined = undefined;
       const timer = setTimeout(() => {
         this.#waiting = this.#waiting.filter((cb) => cb !== callback);
-        reject("Timeout expired");
+        reject(new Error("Timeout expired"));
       }, timeout);
       callback = () => {
         clearTimeout(timer);

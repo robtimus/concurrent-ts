@@ -5,8 +5,8 @@ type Callback = () => void;
  * @template V The value type.
  */
 export class ConcurrentMap<K, V> {
-  #current: Map<K, V>;
-  #pending: Map<K, Callback[]>;
+  readonly #current: Map<K, V>;
+  readonly #pending: Map<K, Callback[]>;
 
   /**
    * @param entries Initial entries for the map.
