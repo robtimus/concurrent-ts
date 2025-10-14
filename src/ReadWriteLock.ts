@@ -249,12 +249,11 @@ export class ReadWriteLock {
 }
 
 class ReadLockImpl implements ReadLock {
-  #held: boolean;
+  #held: boolean = true;
   readonly #release: () => void;
   readonly #acquireWriteLock: (timeout?: number) => Promise<WriteLock>;
 
   constructor(release: () => void, acquireWriteLock: (timeout?: number) => Promise<WriteLock>) {
-    this.#held = true;
     this.#release = release;
     this.#acquireWriteLock = acquireWriteLock;
   }
@@ -286,12 +285,11 @@ class ReadLockImpl implements ReadLock {
 }
 
 class WriteLockImpl implements WriteLock {
-  #held: boolean;
+  #held: boolean = true;
   readonly #release: () => void;
   readonly #downGradeToReadLock: () => ReadLock;
 
   constructor(release: () => void, downGradeToReadLock: () => ReadLock) {
-    this.#held = true;
     this.#release = release;
     this.#downGradeToReadLock = downGradeToReadLock;
   }

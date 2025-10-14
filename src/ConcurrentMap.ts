@@ -122,7 +122,7 @@ export class ConcurrentMap<K, V> {
       }
     }
     const promises: Promise<unknown>[] = [];
-    this.#pending.forEach((p, k) => {
+    for (const [k, p] of this.#pending) {
       promises.push(
         new Promise<void>((resolve) => {
           p.push(() => {
@@ -132,7 +132,7 @@ export class ConcurrentMap<K, V> {
           });
         }),
       );
-    });
+    }
     await Promise.all(promises);
   }
 
@@ -271,11 +271,11 @@ export class ConcurrentMap<K, V> {
     return new Promise((resolve, reject) => {
       pending.push(() => {
         const oldValue = this.#current.get(key);
-        if (oldValue !== undefined) {
+        if (oldValue === undefined) {
+          this.#computeWhenAbsent(key, fn, resolve, reject);
+        } else {
           resolve(oldValue);
           this.#triggerNextPending(key);
-        } else {
-          this.#computeWhenAbsent(key, fn, resolve, reject);
         }
       });
     });
@@ -480,7 +480,9 @@ export class ConcurrentMap<K, V> {
    * @param callback The function to call for each entry. Its arguments will be the value, key and this map.
    */
   forEach(callback: (v: V, k: K, map: ConcurrentMap<K, V>) => void): void {
-    this.#current.forEach((v, k) => callback(v, k, this));
+    for (const [k, v] of this.#current) {
+      callback(v, k, this);
+    }
   }
 
   #result<T>(key: K, fn: () => T): Promise<T> {

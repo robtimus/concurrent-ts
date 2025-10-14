@@ -56,7 +56,9 @@ export class CountDownLatch {
       if (this.#count === 0) {
         const waiting = this.#waiting;
         this.#waiting = [];
-        waiting.forEach((resolve) => resolve());
+        for (const resolve of waiting) {
+          resolve();
+        }
       }
     }
   }
