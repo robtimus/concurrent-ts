@@ -504,7 +504,7 @@ export class ConcurrentMap<K, V> {
     if (nextPending) {
       nextPending();
     }
-    if (pending && pending.length === 0) {
+    if (pending?.length === 0) {
       this.#pending.delete(key);
     }
   }
