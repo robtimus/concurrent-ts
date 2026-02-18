@@ -31,7 +31,7 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - name: Install packages
-        run: npm ci
+        run: npm ci --ignore-scripts
       - name: Run TypeDoc
         run: npm run typedoc
       - uses: actions/upload-artifact@v4

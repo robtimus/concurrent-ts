@@ -38,7 +38,7 @@ jobs:
           node-version: ${{matrix.node}}
           cache: 'npm'
       - name: Install packages
-        run: npm ci
+        run: npm ci --ignore-scripts
       - name: Build project
         run: npm run build
       - name: Run tests
@@ -56,6 +56,6 @@ jobs:
           node-version: '22.x'
           cache: 'npm'
       - name: Install packages
-        run: npm ci
+        run: npm ci --ignore-scripts
       - name: Run TypeDoc
         run: npm run typedoc
