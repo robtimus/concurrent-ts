@@ -3,7 +3,6 @@
 [![Build Status](https://github.com/robtimus/concurrent-ts/actions/workflows/build.yml/badge.svg)](https://github.com/robtimus/concurrent-ts/actions/workflows/build.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=robtimus%3Aconcurrent&metric=alert_status)](https://sonarcloud.io/summary/overall?id=robtimus%3Aconcurrent)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=robtimus%3Aconcurrent&metric=coverage)](https://sonarcloud.io/summary/overall?id=robtimus%3Aconcurrent)
-[![Known Vulnerabilities](https://snyk.io/test/github/robtimus/concurrent-ts/badge.svg)](https://snyk.io/test/github/robtimus/concurrent-ts)
 
 ## [CountDownLatch](https://robtimus.github.io/concurrent-ts/classes/CountDownLatch.CountDownLatch.html)
 
