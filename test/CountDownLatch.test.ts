@@ -1,3 +1,4 @@
+import { describe, test, beforeEach, afterEach, expect } from "vitest";
 import { CountDownLatch } from "../src";
 import { captureTimeouts, expectedCapturedTimeouts, expectedRemainingTimeouts, restoreTimeouts } from "./testUtil";
 

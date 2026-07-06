@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { ConcurrentMap, CountDownLatch } from "../src";
 
 const keys = [0, 1, 2, 3, 4];
@@ -478,7 +479,7 @@ describe("keys", () => {
     const iterator = map.keys();
     const next = iterator.next();
     expect(next.done).toBe(true);
-    expect(next.value).toBe(undefined);
+    expect(next.value).toBeUndefined();
   });
 
   test("without running actions", async () => {
@@ -526,7 +527,7 @@ describe("values", () => {
     const iterator = map.values();
     const next = iterator.next();
     expect(next.done).toBe(true);
-    expect(next.value).toBe(undefined);
+    expect(next.value).toBeUndefined();
   });
 
   test("without running actions", async () => {
@@ -574,7 +575,7 @@ describe("entries", () => {
     const iterator = map.entries();
     const next = iterator.next();
     expect(next.done).toBe(true);
-    expect(next.value).toBe(undefined);
+    expect(next.value).toBeUndefined();
   });
 
   test("without running actions", async () => {

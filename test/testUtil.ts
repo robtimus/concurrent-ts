@@ -1,3 +1,7 @@
+/// <reference types="node" />
+
+import { expect } from "vitest";
+
 const originalSetTimeout = global.setTimeout;
 const originalClearTimeout = global.clearTimeout;
 

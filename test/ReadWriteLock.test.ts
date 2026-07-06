@@ -1,3 +1,4 @@
+import { describe, test, beforeEach, afterEach, expect } from "vitest";
 import { ReadLock, ReadWriteLock, WriteLock } from "../src";
 import { captureTimeouts, clearCapturedTimeouts, expectedCapturedTimeouts, expectedRemainingTimeouts, restoreTimeouts } from "./testUtil";
 
